@@ -9,8 +9,5 @@ runs:
 outputs:
   time:
     description: "The time you invoked the action"
-inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
-    required: true
-    default: 'World'
+  pr_number:
+    description: "The number of PR, eg. [BACK-42]"
