@@ -1,0 +1,16 @@
+name: "Hello world!"
+description: "Simple acton."
+
+runs:
+  using: docker
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.who-to-greet }}
+outputs:
+  time:
+    description: "The time you invoked the action"
+inputs:
+  who-to-greet:  # id of input
+    description: 'Who to greet'
+    required: true
+    default: 'World'
