@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{File, write};
+use std::fs::File;
 use std::io::Read;
 use chrono::Local;
 
@@ -10,16 +10,8 @@ fn main() {
 
 fn set_github_output_env() {
     let time = Local::now().to_string();
-    let time_var = format!("time={}", time);
-    let pr_number_var = String::from("pr_number=[PR-NUM]");
-    let github_output_path = env::var("GITHUB_OUTPUT");
-    match github_output_path {
-        Ok(v) => {
-            writeln!(&v, pr_number_var);
-            writeln!(&v, time_var);
-        },
-        Err(_e) => eprintln!("{}", _e),
-    }
+    println!("::set-output name=time::{}", time);
+    println!("::set-output name=pr_number::[PR-NUM]");
 }
 
 /// `GITHUB_EVENT_PATH`
