@@ -15,8 +15,8 @@ fn set_github_output_env() {
     let github_output_path = env::var("GITHUB_OUTPUT");
     match github_output_path {
         Ok(v) => {
-            write(&v, time_var).unwrap();
-            write(v, pr_number_var).unwrap();
+            writeln!(&v, pr_number_var);
+            writeln!(&v, time_var);
         },
         Err(_e) => eprintln!("{}", _e),
     }
