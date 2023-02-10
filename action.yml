@@ -5,7 +5,5 @@ runs:
   using: docker
   image: "Dockerfile"
 outputs:
-  time:
-    description: "The time you invoked the action"
   pr_number:
     description: "The number of PR, eg. [BACK-42]"
