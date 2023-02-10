@@ -4,8 +4,6 @@ description: "Simple acton."
 runs:
   using: docker
   image: "Dockerfile"
-  args:
-    - ${{ github.event.pull_request }}
 outputs:
   pr_number:
     description: "The number of PR, eg. [BACK-42]"
