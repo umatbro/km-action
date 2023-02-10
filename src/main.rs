@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{write, File};
+use std::fs::{File, write};
 use std::io::Read;
 use chrono::Local;
 
@@ -10,8 +10,16 @@ fn main() {
 
 fn set_github_output_env() {
     let time = Local::now().to_string();
-    println!("::set-output name=time::{}", time);
-    println!("::set-output name=pr_number::[PR-NUM]");
+    let time_var = format!("time={}", time);
+    let pr_number_var = String::from("pr_number=[PR-NUM]");
+    let github_output_path = env::var("GITHUB_OUTPUT");
+    match github_output_path {
+        Ok(v) => {
+            write(&v, time_var).unwrap();
+            write(v, pr_number_var).unwrap();
+        },
+        Err(_e) => eprintln!("{}", _e),
+    }
 }
 
 /// `GITHUB_EVENT_PATH`
@@ -27,7 +35,7 @@ See example in https://github.com/marketplace/actions/github-api-request#usage",
     );
     println!("Github token: {}", github_token);
     let event_path = env::var("GITHUB_EVENT_PATH");
-    if let Err(e) = event_path {
+    if let Err(_e) = event_path {
         panic!("GITHUB_EVENT_PATH not found.");
     }
     let p = event_path.unwrap();
