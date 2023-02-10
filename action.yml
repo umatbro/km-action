@@ -6,4 +6,6 @@ runs:
   image: "Dockerfile"
 outputs:
   pr_number:
-    description: "The number of PR, eg. [BACK-42]"
+    description: "The number of PR, eg. [BACK-42]."
+  time:
+    description: "Time when the action was finished."

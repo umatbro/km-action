@@ -1,6 +1,7 @@
 use std::env;
-use std::fs::{File, write};
+use std::fs::{write, File};
 use std::io::Read;
+use chrono::Local;
 
 fn main() {
     set_github_output_env();
@@ -8,12 +9,9 @@ fn main() {
 }
 
 fn set_github_output_env() {
-    let env_val = format!("pr_number=[PR-NUM]");
-    let github_output_path = env::var("GITHUB_OUTPUT");
-    match github_output_path {
-        Ok(v) => write(v, env_val).unwrap(),
-        Err(_e) => env::set_var("GITHUB_OUTPUT", env_val),
-    }
+    let time = Local::now().to_string();
+    println!("::set-output name=time::{}", time);
+    println!("::set-output name=pr_number::[PR-NUM]");
 }
 
 /// `GITHUB_EVENT_PATH`
@@ -23,10 +21,11 @@ fn set_github_output_env() {
 ///
 /// https://docs.github.com/en/actions/learn-github-actions/variables
 fn print_pr_link() {
-    println!(
-        "Github token: {}",
-        env::var("GITHUB_TOKEN").unwrap_or("<missing>".to_string())
+    let github_token = env::var("GITHUB_TOKEN").expect(
+        "Env GITHUB_TOKEN not found. Modify your config file to pass it to the action.\n\
+See example in https://github.com/marketplace/actions/github-api-request#usage",
     );
+    println!("Github token: {}", github_token);
     let event_path = env::var("GITHUB_EVENT_PATH");
     if let Err(e) = event_path {
         panic!("GITHUB_EVENT_PATH not found.");
