@@ -1,7 +1,6 @@
 use octocrab;
 use octocrab::Octocrab;
 use serde::Deserialize;
-use std::sync::Arc;
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
@@ -36,12 +35,12 @@ impl Repository {
 impl Event {
     pub async fn set_pr_body(
         &self,
-        octo: Arc<Octocrab>,
+        octo: &Octocrab,
         body: &String,
     ) -> octocrab::Result<octocrab::models::pulls::PullRequest> {
         let result = octo
             .pulls(&self.repository.get_owner().unwrap(), &self.repository.name)
-            .update(2)
+            .update(self.pull_request.number as u64)
             .body(body)
             .send()
             .await;
