@@ -1,11 +1,25 @@
+mod github_pull_request;
+
+use chrono::Local;
 use std::env;
 use std::fs::File;
-use std::io::Read;
-use chrono::Local;
+use std::io::BufReader;
+use std::sync::Arc;
 
-fn main() {
+use github_pull_request::Event;
+
+#[tokio::main]
+async fn main() {
     set_github_output_env();
-    print_pr_link();
+    let event = get_pr_details();
+    let octo = octocrab::instance();
+    let set_body_result = event
+        .set_pr_body(Arc::clone(&octo), &String::from("body from job"))
+        .await;
+    println!(
+        "PR after update is: {:?}",
+        set_body_result.expect("Error while updating PR")
+    );
 }
 
 fn set_github_output_env() {
@@ -20,19 +34,20 @@ fn set_github_output_env() {
 /// For example, `/github/workflow/event.json`.
 ///
 /// https://docs.github.com/en/actions/learn-github-actions/variables
-fn print_pr_link() {
+fn get_pr_details() -> Event {
     let github_token = env::var("GITHUB_TOKEN").expect(
         "Env GITHUB_TOKEN not found. Modify your config file to pass it to the action.\n\
 See example in https://github.com/marketplace/actions/github-api-request#usage",
     );
     println!("Github token: {}", github_token);
+
     let event_path = env::var("GITHUB_EVENT_PATH");
-    if let Err(_e) = event_path {
-        panic!("GITHUB_EVENT_PATH not found.");
-    }
-    let p = event_path.unwrap();
-    let mut f = File::open(p).unwrap();
-    let mut buf = String::new();
-    f.read_to_string(&mut buf).unwrap();
-    println!("Data from GITHUB_EVENT_PATH: {}", buf);
+    let p = event_path.expect("GITHUB_EVENT_PATH not found.");
+
+    let f = File::open(p).unwrap();
+    let reader = BufReader::new(f);
+    let parsed = serde_json::from_reader(reader).unwrap();
+
+    println!("Data from GITHUB_EVENT_PATH: {:?}", &parsed);
+    parsed
 }
