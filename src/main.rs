@@ -1,3 +1,4 @@
+mod description_manipulator;
 mod github_pull_request;
 
 use chrono::Local;
@@ -17,9 +18,8 @@ async fn main() {
         .personal_token(github_token)
         .build()
         .unwrap();
-    let set_body_result = event
-        .set_pr_body(&octo, &String::from("body from job"))
-        .await;
+    let body_to_set = description_manipulator::get_update_body(&event.pull_request.body);
+    let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
     println!(
         "PR after update is: {:?}",
         set_body_result.expect("Error while updating PR")
