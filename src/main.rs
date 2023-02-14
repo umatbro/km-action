@@ -8,6 +8,8 @@ use std::fs::File;
 use std::io::BufReader;
 
 use github_pull_request::Event;
+#[macro_use]
+extern crate pest_derive;
 
 #[tokio::main]
 async fn main() {
@@ -18,7 +20,7 @@ async fn main() {
         .personal_token(github_token)
         .build()
         .unwrap();
-    let body_to_set = description_manipulator::get_update_body(&event.pull_request.body);
+    let body_to_set = description_manipulator::get_update_body(&event.pull_request);
     let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
     println!(
         "PR after update is: {:?}",
@@ -37,7 +39,7 @@ fn set_github_output_env() {
 /// The path to the file on the runner that contains the full event webhook payload.
 /// For example, `/github/workflow/event.json`.
 ///
-/// https://docs.github.com/en/actions/learn-github-actions/variables
+/// <https://docs.github.com/en/actions/learn-github-actions/variables>
 fn get_pr_details() -> Event {
     let event_path = env::var("GITHUB_EVENT_PATH");
     let p = event_path.expect("GITHUB_EVENT_PATH not found.");
