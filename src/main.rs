@@ -5,7 +5,6 @@ mod github_pull_request;
 
 use crate::cli::read_cli_args;
 
-use octocrab::models::{InstallationPermissions, InstallationToken};
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
