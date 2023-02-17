@@ -39,7 +39,7 @@ async fn main() {
     };
 
     let pulls = lib_repo_octo
-        .pulls(event.repository.get_owner().unwrap(), lib_repo_name)
+        .pulls(event.repository.get_owner().unwrap(), &lib_repo_name.0)
         .list()
         .send()
         .await
