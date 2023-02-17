@@ -2,13 +2,14 @@ mod common_lib_handler;
 mod description_manipulator;
 mod github_pull_request;
 
-use chrono::Local;
-
+use octocrab::Octocrab;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
 
-use github_pull_request::Event;
+use crate::common_lib_handler::{get_client_for_repo_from_installations, GithubSetupError};
+use crate::github_pull_request::Event;
+
 #[macro_use]
 extern crate pest_derive;
 
@@ -21,6 +22,20 @@ async fn main() {
         .personal_token(github_token)
         .build()
         .unwrap();
+
+    let lib_repo_octo = get_client_for_repo_from_installations(&octo, "km-action").await;
+    let lib_repo_octo = match lib_repo_octo {
+        Ok(oct) => oct,
+        Err(e) => panic!("There was an error authenticating lib repo: {:?}", e),
+    };
+    let pulls = lib_repo_octo
+        .pulls(event.repository.get_owner(), event.repository.name)
+        .list()
+        .send()
+        .await
+        .expect("There was an error downloading pull requests from lib repo.")
+        .take_items();
+    println!("Pulls from lib repo: {:?}", pulls);
     let body_to_set = description_manipulator::get_update_body(&event.pull_request);
     let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
     println!(

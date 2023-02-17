@@ -54,22 +54,40 @@ pub async fn get_octocrab_instance_for_lib_repo(
     let token = octocrab::auth::create_jwt(app_id, &key)?;
 
     let crab = OctocrabBuilder::new().personal_token(token).build()?;
-    let installations = crab.apps().installations().send().await?.take_items();
-    let mut create_access_token = CreateInstallationAccessToken::default();
-    create_access_token.repositories = vec![String::from(lib_repo_name)];
 
-    let access_to_repo: InstallationToken = crab
+    Ok(get_client_for_repo_from_installations(&crab, lib_repo_name).await?)
+}
+
+/// Github action has receives GITHUB_TOKEN env variable, with permissions to the repo that currently
+/// runs the action. Application can use this token to query app installation and obtain another token
+/// for the repo that is part of that installation.
+///
+/// This function queries app installations and attempts to retrieve an access token for the requested
+/// `repo_name`.
+///
+/// # Returns
+///
+/// An octocrab client with authentication for the requested repo.
+pub async fn get_client_for_repo_from_installations(
+    octocrab_: &Octocrab,
+    repo_name: &str,
+) -> Result<Octocrab, GithubSetupError> {
+    let installations = octocrab_.apps().installations().send().await?.take_items();
+    let mut create_access_token = CreateInstallationAccessToken::default();
+    create_access_token.repositories = vec![String::from(repo_name)];
+
+    let access_to_repo: InstallationToken = octocrab_
         .post(
             installations[0].access_tokens_url.as_ref().unwrap(),
             Some(&create_access_token),
         )
         .await?;
 
-    let octocrab_for_lib = OctocrabBuilder::new()
+    let octocrab_for_repo = OctocrabBuilder::new()
         .personal_token(access_to_repo.token)
         .build()?;
 
-    Ok(octocrab_for_lib)
+    Ok(octocrab_for_repo)
 }
 
 #[cfg(test)]
