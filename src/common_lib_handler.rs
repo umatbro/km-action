@@ -52,7 +52,7 @@ pub async fn get_octocrab_instance_for_lib_repo(
     let key = EncodingKey::from_rsa_pem(private_key)?;
 
     let token = octocrab::auth::create_jwt(app_id, &key)?;
-    println!("jwt token: {}", token);
+
     let crab = OctocrabBuilder::new().personal_token(token).build()?;
 
     Ok(get_client_for_repo_from_installations(&crab, lib_repo_name).await?)
@@ -78,7 +78,7 @@ pub async fn get_client_for_repo_from_installations(
             Some(&create_access_token),
         )
         .await?;
-    println!("Access to repo: {:?}", access_to_repo);
+    println!("Access to repo: {:#?}", access_to_repo);
     let octocrab_for_repo = OctocrabBuilder::new()
         .personal_token(access_to_repo.token)
         .build()?;

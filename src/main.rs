@@ -5,6 +5,7 @@ mod github_pull_request;
 
 use crate::cli::read_cli_args;
 
+use octocrab::models::{InstallationPermissions, InstallationToken};
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
@@ -38,16 +39,13 @@ async fn main() {
     };
 
     let pulls = lib_repo_octo
-        .pulls(
-            event.repository.get_owner().unwrap(),
-            &event.repository.name,
-        )
+        .pulls(event.repository.get_owner().unwrap(), lib_repo_name)
         .list()
         .send()
         .await
         .expect("There was an error downloading pull requests from lib repo.")
         .take_items();
-    println!("Pulls from lib repo: {:?}", pulls);
+    println!("Pulls from lib repo: {:#?}", pulls);
 
     let body_to_set = description_manipulator::get_update_body(&event.pull_request);
     let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
