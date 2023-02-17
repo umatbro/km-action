@@ -1,13 +1,18 @@
+mod cli;
 mod common_lib_handler;
 mod description_manipulator;
 mod github_pull_request;
 
+use crate::cli::{read_cli_args, LibRepoName, PemContents};
+use octocrab::models::AppId;
 use octocrab::Octocrab;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
 
-use crate::common_lib_handler::{get_client_for_repo_from_installations, GithubSetupError};
+use crate::common_lib_handler::{
+    get_client_for_repo_from_installations, get_octocrab_instance_for_lib_repo, GithubSetupError,
+};
 use crate::github_pull_request::Event;
 
 #[macro_use]
@@ -15,6 +20,11 @@ extern crate pest_derive;
 
 #[tokio::main]
 async fn main() {
+    let read_cli_result = read_cli_args();
+    let (app_id, private_key, lib_repo_name) = match read_cli_result {
+        Ok(v) => v,
+        Err(msg) => panic!("{msg}"),
+    };
     let event = get_pr_details();
     let github_token = get_github_token();
     let octo = octocrab::OctocrabBuilder::new()
@@ -22,11 +32,14 @@ async fn main() {
         .build()
         .unwrap();
 
-    let lib_repo_octo = get_client_for_repo_from_installations(&octo, "km-action").await;
+    let lib_repo_octo =
+        get_octocrab_instance_for_lib_repo(app_id, &private_key.0.as_bytes(), &lib_repo_name.0)
+            .await;
     let lib_repo_octo = match lib_repo_octo {
         Ok(oct) => oct,
         Err(e) => panic!("There was an error authenticating lib repo: {:?}", e),
     };
+
     let pulls = lib_repo_octo
         .pulls(
             event.repository.get_owner().unwrap(),
@@ -38,6 +51,7 @@ async fn main() {
         .expect("There was an error downloading pull requests from lib repo.")
         .take_items();
     println!("Pulls from lib repo: {:?}", pulls);
+
     let body_to_set = description_manipulator::get_update_body(&event.pull_request);
     let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
     println!(

@@ -58,10 +58,6 @@ pub async fn get_octocrab_instance_for_lib_repo(
     Ok(get_client_for_repo_from_installations(&crab, lib_repo_name).await?)
 }
 
-/// Github action has receives GITHUB_TOKEN env variable, with permissions to the repo that currently
-/// runs the action. Application can use this token to query app installation and obtain another token
-/// for the repo that is part of that installation.
-///
 /// This function queries app installations and attempts to retrieve an access token for the requested
 /// `repo_name`.
 ///
