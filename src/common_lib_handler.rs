@@ -80,9 +80,12 @@ mod tests {
     use std::fs::File;
     use std::io::Read;
 
-    // test is ignored because it makes real requests against GitHub API. It should only be run locally.
-    // to run only this test, use command:
-    // cargo test initialize_octocrab -- --ignored
+    /// Test is ignored because it makes real requests against GitHub API. It should only be run locally.
+    /// To run only this test, use command:
+    ///
+    /// ```
+    /// cargo test initialize_octocrab -- --ignored
+    /// ```
     #[ignore]
     #[tokio::test]
     async fn initialize_octocrab() {
