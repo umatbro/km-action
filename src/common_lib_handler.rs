@@ -3,12 +3,11 @@ use octocrab;
 use octocrab::models::{AppId, InstallationToken};
 use octocrab::params::apps::CreateInstallationAccessToken;
 use octocrab::{Octocrab, OctocrabBuilder};
-use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct GithubSetupError {
-    jsonwebtoken_error: Option<jsonwebtoken::errors::Error>,
-    github_error: Option<octocrab::Error>,
+    pub jsonwebtoken_error: Option<jsonwebtoken::errors::Error>,
+    pub github_error: Option<octocrab::Error>,
 }
 
 impl From<octocrab::Error> for GithubSetupError {
@@ -77,7 +76,7 @@ pub async fn get_octocrab_instance_for_lib_repo(
 mod tests {
     use crate::common_lib_handler::get_octocrab_instance_for_lib_repo;
     use octocrab::models::AppId;
-    use octocrab::Octocrab;
+
     use std::fs::File;
     use std::io::Read;
 
