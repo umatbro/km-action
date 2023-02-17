@@ -40,14 +40,16 @@ impl From<jsonwebtoken::errors::Error> for GithubSetupError {
 /// # Panics
 ///
 /// The function will panic if provided private key fails to authenticate.
+///
+/// # Useful resources
+///
+/// * https://stackoverflow.com/questions/66509694/unable-to-access-github-api-getting-bad-credentials-error
+/// * Octocrab examples https://github.com/XAMPPRocky/octocrab/blob/master/examples/github_app_authentication_manual.rs
 pub async fn get_octocrab_instance_for_lib_repo(
     app_id: AppId,
     private_key: &[u8],
     lib_repo_name: &str,
 ) -> Result<Octocrab, GithubSetupError> {
-    /// useful resources:
-    /// * https://stackoverflow.com/questions/66509694/unable-to-access-github-api-getting-bad-credentials-error
-    /// * Octocrab examples https://github.com/XAMPPRocky/octocrab/blob/master/examples/github_app_authentication_manual.rs
     let key = EncodingKey::from_rsa_pem(private_key)?;
 
     let token = octocrab::auth::create_jwt(app_id, &key)?;
@@ -79,6 +81,10 @@ mod tests {
     use std::fs::File;
     use std::io::Read;
 
+    // test is ignored because it makes real requests against GitHub API. It should only be run locally.
+    // to run only this test, use command:
+    // cargo test initialize_octocrab -- --ignored
+    #[ignore]
     #[tokio::test]
     async fn initialize_octocrab() {
         let mut pk = File::open("km-common-lib-syncer.private-key.pem").unwrap();
