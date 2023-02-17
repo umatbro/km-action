@@ -15,7 +15,6 @@ extern crate pest_derive;
 
 #[tokio::main]
 async fn main() {
-    set_github_output_env();
     let event = get_pr_details();
     let github_token = get_github_token();
     let octo = octocrab::OctocrabBuilder::new()
@@ -29,7 +28,10 @@ async fn main() {
         Err(e) => panic!("There was an error authenticating lib repo: {:?}", e),
     };
     let pulls = lib_repo_octo
-        .pulls(event.repository.get_owner(), event.repository.name)
+        .pulls(
+            event.repository.get_owner().unwrap(),
+            &event.repository.name,
+        )
         .list()
         .send()
         .await
@@ -42,12 +44,6 @@ async fn main() {
         "PR after update is: {:?}",
         set_body_result.expect("Error while updating PR")
     );
-}
-
-fn set_github_output_env() {
-    let time = Local::now().to_string();
-    println!("::set-output name=time::{}", time);
-    println!("::set-output name=pr_number::[PR-NUM]");
 }
 
 /// `GITHUB_EVENT_PATH`
