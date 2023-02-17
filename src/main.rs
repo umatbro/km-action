@@ -3,16 +3,13 @@ mod common_lib_handler;
 mod description_manipulator;
 mod github_pull_request;
 
-use crate::cli::{read_cli_args, LibRepoName, PemContents};
-use octocrab::models::AppId;
-use octocrab::Octocrab;
+use crate::cli::read_cli_args;
+
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
 
-use crate::common_lib_handler::{
-    get_client_for_repo_from_installations, get_octocrab_instance_for_lib_repo, GithubSetupError,
-};
+use crate::common_lib_handler::get_octocrab_instance_for_lib_repo;
 use crate::github_pull_request::Event;
 
 #[macro_use]

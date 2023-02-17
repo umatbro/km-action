@@ -1,7 +1,5 @@
 use octocrab::models::AppId;
 use std::env;
-use std::fs::File;
-use std::io::Read;
 
 pub struct PemContents(pub String);
 pub struct LibRepoName(pub String);
