@@ -1,3 +1,4 @@
+mod common_lib_handler;
 mod description_manipulator;
 mod github_pull_request;
 
