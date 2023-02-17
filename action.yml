@@ -4,6 +4,10 @@ description: "Action to run KM Syncer App"
 runs:
   using: docker
   image: "Dockerfile"
+  args:
+    - ${{ inputs.app_id }}
+    - ${{ inputs.app_private_key }}
+    - ${{ inputs.lib_repo_name }}
 inputs:
   app_id:
     description: "App id of the KM Syncer app."
