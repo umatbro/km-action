@@ -51,11 +51,11 @@ async fn main() {
 
     let body_to_set =
         description_manipulator::get_update_body(&event.pull_request, &lib_repo_pulls);
-    let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
-    println!(
-        "PR after update is: {:?}",
-        set_body_result.expect("Error while updating PR")
-    );
+    let set_body_result = event
+        .set_pr_body(&octo, &body_to_set)
+        .await
+        .expect("Error while updating PR");
+    println!("Success! PR {} updated.", set_body_result.number);
 }
 
 /// `GITHUB_EVENT_PATH`

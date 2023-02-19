@@ -78,7 +78,6 @@ pub async fn get_client_for_repo_from_installations(
             Some(&create_access_token),
         )
         .await?;
-    println!("Access to repo: {:#?}", access_to_repo);
     let octocrab_for_repo = OctocrabBuilder::new()
         .personal_token(access_to_repo.token)
         .build()?;
