@@ -1,4 +1,6 @@
+use crate::cli::JiraLink;
 use crate::github_pull_request::PullRequest;
+
 
 /// This package contains code that updates the PR's body.
 
@@ -12,6 +14,7 @@ const COMMENT_END: &'static str = "<!-- END KM-ACTION -->";
 pub fn get_update_body(
     pull_request: &PullRequest,
     lib_repo_pull_requests: &Vec<PullRequest>,
+    jira_link: &Option<JiraLink>,
 ) -> String {
     let current_body = &pull_request.body;
     let mut lines: Vec<String> = current_body.lines().map(|i| i.to_string()).collect();
@@ -22,7 +25,7 @@ pub fn get_update_body(
     lines_added.push(String::from("---"));
     lines_added.push(String::from("### 🤖 This is update from km-action."));
     lines_added.push(String::from(""));
-    lines_added.push(get_ticket_number_line(pull_request));
+    lines_added.push(get_ticket_number_line(pull_request, jira_link));
     for line in get_lib_prs_lines(pull_request, lib_repo_pull_requests) {
         lines_added.push(line);
     }
@@ -46,13 +49,20 @@ pub fn get_update_body(
     result
 }
 
-fn get_ticket_number_line(pull_request: &PullRequest) -> String {
+fn get_ticket_number_line(pull_request: &PullRequest, jira_link: &Option<JiraLink>) -> String {
     let ticket_numbers = pull_request.get_ticket_number();
     if let Err(_) = ticket_numbers {
         return String::from("❓Ticket number: **Not Found**");
     }
     let mut result = String::from("✅ Ticket number: **");
-    let mut ticket_numbers = ticket_numbers.unwrap().into_iter().collect::<Vec<String>>();
+    let mut ticket_numbers = ticket_numbers
+        .unwrap()
+        .into_iter()
+        .map(|tick_num| match jira_link {
+            None => tick_num,
+            Some(jl) => format!("[{}]({})", tick_num, jl.ticket_url(&tick_num)),
+        })
+        .collect::<Vec<String>>();
     ticket_numbers.sort();
     let ticket_numbers_str = ticket_numbers.join(", ");
     result.push_str(&ticket_numbers_str);
@@ -136,6 +146,7 @@ fn find_lines_assigned_by_action(lines: &Vec<String>) -> Option<LinesAssignedByA
 
 #[cfg(test)]
 mod tests {
+    use crate::cli::JiraLink;
     use crate::description_manipulator::{find_lines_assigned_by_action, get_update_body};
     use crate::github_pull_request::PullRequest;
     use rstest::rstest;
@@ -160,9 +171,10 @@ mod tests {
             String::from("Title with no ticket number"),
             String::from("[BACK-2] Title with non-matching other ticket number.")
         ],
+        Some(JiraLink::parse("https://test.com").unwrap())
     )]
-    #[case("data2_in.md", "data2_out.md", "", vec![String::from("[BACK-1] Non matching ticket.")])]
-    #[case("data3_in.md", "data3_out.md", "Invalid title", vec![])]
+    #[case("data2_in.md", "data2_out.md", "", vec![String::from("[BACK-1] Non matching ticket.")], None)]
+    #[case("data3_in.md", "data3_out.md", "Invalid title", vec![], None)]
     #[case(
         "data4_in.md",
         "data4_out.md",
@@ -171,12 +183,14 @@ mod tests {
             String::from("One invalid PR title"),
             String::from("[BACK-42] Valid ticket number from lib repo"),
         ],
+        None,
     )]
     fn test_get_updated_body(
         #[case] data_in: &str,
         #[case] data_out: &str,
         #[case] pull_request_title: &str,
         #[case] lib_pull_requests_titles: Vec<String>,
+        #[case] jira_host: Option<JiraLink>,
     ) {
         let data_in = read_test_file_content(data_in);
         let data_out = read_test_file_content(data_out);
@@ -195,8 +209,7 @@ mod tests {
                 ..Default::default()
             })
             .collect();
-
-        let result = get_update_body(&pull_request, &lib_pull_requests);
+        let result = get_update_body(&pull_request, &lib_pull_requests, &jira_host);
         assert_eq!(data_out, result);
     }
 

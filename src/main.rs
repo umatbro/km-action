@@ -18,7 +18,7 @@ extern crate pest_derive;
 #[tokio::main]
 async fn main() {
     let read_cli_result = read_cli_args();
-    let (app_id, private_key, lib_repo_name) = match read_cli_result {
+    let (app_id, private_key, lib_repo_name, jira_link) = match read_cli_result {
         Ok(v) => v,
         Err(msg) => panic!("{msg}"),
     };
@@ -50,7 +50,7 @@ async fn main() {
     println!("Pulls from lib repo: {:#?}", lib_repo_pulls);
 
     let body_to_set =
-        description_manipulator::get_update_body(&event.pull_request, &lib_repo_pulls);
+        description_manipulator::get_update_body(&event.pull_request, &lib_repo_pulls, &jira_link);
     let set_body_result = event
         .set_pr_body(&octo, &body_to_set)
         .await

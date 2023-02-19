@@ -8,6 +8,7 @@ runs:
     - ${{ inputs.app_id }}
     - ${{ inputs.app_private_key }}
     - ${{ inputs.lib_repo_name }}
+    - ${{ inputs.jira_host }}
 inputs:
   app_id:
     description: "App id of the KM Syncer app."
@@ -19,3 +20,7 @@ inputs:
     description: "Name of the repository with common-lib."
     required: true
     default: "be-keto-mojo-common-lib"
+  jira_host:
+    description: "Base url to JIRA board."
+    required: false
+    default: "https://keto-mojo.atlassian.net/"
