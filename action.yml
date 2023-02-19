@@ -1,11 +1,21 @@
-name: "Hello world!"
-description: "Simple acton."
+name: "KM Syncer action"
+description: "Action to run KM Syncer App"
 
 runs:
   using: docker
   image: "Dockerfile"
-outputs:
-  pr_number:
-    description: "The number of PR, eg. [BACK-42]."
-  time:
-    description: "Time when the action was finished."
+  args:
+    - ${{ inputs.app_id }}
+    - ${{ inputs.app_private_key }}
+    - ${{ inputs.lib_repo_name }}
+inputs:
+  app_id:
+    description: "App id of the KM Syncer app."
+    required: true
+  app_private_key:
+    description: "Private key generated for the installed KM Syncer App."
+    required: true
+  lib_repo_name:
+    description: "Name of the repository with common-lib."
+    required: true
+    default: "be-keto-mojo-common-lib"
