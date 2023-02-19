@@ -22,5 +22,5 @@ inputs:
     default: "be-keto-mojo-common-lib"
   jira_host:
     description: "Base url to JIRA board."
-    required: false
+    required: true
     default: "https://keto-mojo.atlassian.net/"

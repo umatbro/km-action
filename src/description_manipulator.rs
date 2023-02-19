@@ -1,7 +1,6 @@
 use crate::cli::JiraLink;
 use crate::github_pull_request::PullRequest;
 
-
 /// This package contains code that updates the PR's body.
 
 const COMMENT_START: &'static str = "<!-- START KM-ACTION -->";
