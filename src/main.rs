@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 use crate::common_lib_handler::get_octocrab_instance_for_lib_repo;
-use crate::github_pull_request::Event;
+use crate::github_pull_request::{Event, PullRequest};
 
 #[macro_use]
 extern crate pest_derive;
@@ -37,16 +37,20 @@ async fn main() {
         Err(e) => panic!("There was an error authenticating lib repo: {:?}", e),
     };
 
-    let pulls = lib_repo_octo
+    let lib_repo_pulls: Vec<PullRequest> = lib_repo_octo
         .pulls(event.repository.get_owner().unwrap(), &lib_repo_name.0)
         .list()
         .send()
         .await
         .expect("There was an error downloading pull requests from lib repo.")
-        .take_items();
-    println!("Pulls from lib repo: {:#?}", pulls);
+        .take_items()
+        .into_iter()
+        .map(|v| v.into())
+        .collect();
+    println!("Pulls from lib repo: {:#?}", lib_repo_pulls);
 
-    let body_to_set = description_manipulator::get_update_body(&event.pull_request);
+    let body_to_set =
+        description_manipulator::get_update_body(&event.pull_request, &lib_repo_pulls);
     let set_body_result = event.set_pr_body(&octo, &body_to_set).await;
     println!(
         "PR after update is: {:?}",

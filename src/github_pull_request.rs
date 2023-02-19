@@ -2,6 +2,7 @@ use octocrab;
 use octocrab::Octocrab;
 use pest::Parser;
 use serde::Deserialize;
+use std::collections::HashSet;
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
@@ -9,19 +10,34 @@ pub struct Event {
     pub repository: Repository,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 pub struct PullRequest {
-    pub number: i32,
+    pub number: u64,
     pub body: String,
     pub title: String,
+    pub html_url: Option<String>,
 }
 
 impl PullRequest {
     /// Get ticket number from the PR title.
     /// * PR title has to start with the ticket number.
     /// * Ticket number has to be inside square brackets.
-    pub fn get_ticket_number(&self) -> Result<Vec<String>, pest::error::Error<Rule>> {
+    pub fn get_ticket_number(&self) -> Result<HashSet<String>, pest::error::Error<Rule>> {
         parse_pr_title(&self.title)
+    }
+}
+
+impl From<octocrab::models::pulls::PullRequest> for PullRequest {
+    fn from(v: octocrab::models::pulls::PullRequest) -> Self {
+        Self {
+            number: v.number,
+            body: v.body.unwrap_or("".into()),
+            title: v.title.unwrap_or("".into()),
+            html_url: match v.html_url {
+                Some(url) => Some(url.to_string()),
+                None => None,
+            },
+        }
     }
 }
 
@@ -29,7 +45,7 @@ impl PullRequest {
 #[grammar = "pr_title.pest"]
 struct PrTitleParser;
 
-fn parse_pr_title(input: &str) -> Result<Vec<String>, pest::error::Error<Rule>> {
+fn parse_pr_title(input: &str) -> Result<HashSet<String>, pest::error::Error<Rule>> {
     let parse_result = PrTitleParser::parse(Rule::pr_title, input)?;
     Ok(parse_result
         .flatten()
@@ -81,6 +97,7 @@ mod tests {
     use pest::error::ErrorVariant;
     use rstest::rstest;
     use serde_json;
+    use std::collections::HashSet;
     use std::fs::File;
     use std::io::BufReader;
 
@@ -102,8 +119,10 @@ mod tests {
     #[case("[BACK-1337] Test", vec!["BACK-1337"])]
     #[case("[BACK-1337][MD-1212] Test", vec!["BACK-1337", "MD-1212"])]
     fn test_parse_pr_title(#[case] pr_title: &str, #[case] expected_ticket_nums: Vec<&str>) {
+        let expected_result =
+            HashSet::from_iter(expected_ticket_nums.into_iter().map(|v| v.to_string()));
         let result = parse_pr_title(pr_title);
-        assert_eq!(expected_ticket_nums, result.unwrap());
+        assert_eq!(expected_result, result.unwrap());
     }
 
     #[rstest]
