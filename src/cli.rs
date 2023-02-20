@@ -2,8 +2,11 @@ use octocrab::models::AppId;
 use std::env;
 use url::{ParseError, Url};
 
+#[derive(Debug)]
 pub struct PemContents(pub String);
+#[derive(Debug)]
 pub struct LibRepoName(pub String);
+#[derive(Debug)]
 pub struct JiraLink {
     host: Url,
 }

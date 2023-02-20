@@ -19,7 +19,10 @@ extern crate pest_derive;
 async fn main() {
     let read_cli_result = read_cli_args();
     let (app_id, private_key, lib_repo_name, jira_link) = match read_cli_result {
-        Ok(v) => v,
+        Ok(v) => {
+            println!("CLI arguments {:?}", &v);
+            v
+        }
         Err(msg) => panic!("{msg}"),
     };
     let event = get_pr_details();
